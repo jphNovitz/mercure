@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Mercure Local</title>
+</head>
+<body>
+  <h1>🔄 Test Mercure</h1>
+
+  <label>Topic : <input id="topic" value="https://test" size="40"></label>
+  <button onclick="subscribe()">S’abonner</button>
+
+  <div id="messages" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
+    <strong>Messages reçus :</strong><br>
+  </div>
+
+  <hr>
+  <label>Message à envoyer : <input id="payload" value='{"msg":"Hello"}' size="40"></label>
+  <button onclick="publish()">Envoyer (anonyme)</button>
+
+  <script>
+    let eventSource;
+
+    function subscribe() {
+      const topic = document.getElementById('topic').value;
+      if (eventSource) eventSource.close();
+
+      const url = new URL('http://localhost:3000/.well-known/mercure');
+      url.searchParams.append('topic', topic);
+
+      eventSource = new EventSource(url);
+
+      eventSource.onopen = () => log('✅ Connecté à Mercure');
+      eventSource.onerror = (e) => log('❌ Erreur : ' + e);
+      eventSource.onmessage = (e) => log('📨 ' + e.data);
+    }
+
+    function publish() {
+      const topic = document.getElementById('topic').value;
+      const payload = document.getElementById('payload').value;
+
+      fetch('http://localhost:3000/.well-known/mercure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `topic=${encodeURIComponent(topic)}&data=${encodeURIComponent(payload)}`
+      }).then(() => log('✅ Message envoyé')).catch(err => log('❌ Envoi échoué'));
+    }
+
+    function log(message) {
+      const messages = document.getElementById('messages');
+      messages.innerHTML += message + '<br>';
+      messages.scrollTop = messages.scrollHeight;
+    }
+  </script>
+</body>
+</html>
