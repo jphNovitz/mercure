@@ -1,0 +1,22 @@
+{
+    auto_https off
+}
+http://localhost:3000 {
+    #root * ../mercure-ui
+    #file_server
+
+    mercure {
+        publisher_jwt !ChangeThisMercureHubJWTSecretKey!
+        subscriber_jwt !ChangeThisMercureHubJWTSecretKey!
+        demo
+        subscriptions
+        anonymous
+        cors_origins *
+        publish_origins *
+    }
+
+    #redir / /.well-known/mercure/ui/
+
+    #respond /healthz 200
+    respond / "bonjour" 200
+}
